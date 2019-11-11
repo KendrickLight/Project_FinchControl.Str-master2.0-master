@@ -23,7 +23,7 @@ namespace Project_FinchControl
             NONE,
             MOVEFORWARD,
             MOVEBACKWARD,
-            STOPMOTORS,
+            STOPMOTORS, 
             WAIT,
             TURNRIGHT,
             TURNLEFT,
@@ -34,6 +34,8 @@ namespace Project_FinchControl
         }
         static void Main(string[] args)
         {
+            
+            setTheme();
             displayWouldYouWantToUpdate();
             DisplayWelcomeScreen();
             DisplayMainMenu();
@@ -45,7 +47,7 @@ namespace Project_FinchControl
         {
             string userResponse;
             bool ChangeTheme = false;
-
+            Console.Clear();
             Console.WriteLine("would you like to update your theme? [yes, no]");
             userResponse = Console.ReadLine().ToLower().Trim();
             Console.WriteLine();
@@ -57,11 +59,16 @@ namespace Project_FinchControl
                         updateTheam();
                         Console.WriteLine("would you like to update your theme again? [yes, no]");
                         userResponse = Console.ReadLine().ToLower().Trim();
+                        if (userResponse == "no")
+                        {
+                            ChangeTheme = true;
+                        }
                         break;
 
                     case "no":
                         setTheme();
                         ChangeTheme = true;
+                        DisplayContinuePrompt();
                         break;
 
                     default:
@@ -77,6 +84,9 @@ namespace Project_FinchControl
 
         static void updateTheam()
         {
+            //
+            //Trying to update the theme
+            //
             string updatedbackground;
             string updatedForeground;
             string dataPath = @"Data\Theme.txt";
@@ -110,7 +120,7 @@ namespace Project_FinchControl
             updatedbackground = Console.ReadLine();
 
 
-            File.WriteAllText(dataPath, updatedForeground);
+            File.WriteAllText(dataPath, updatedForeground + "\n");
             ConsoleColor foregroundColor;
 
             Enum.TryParse(updatedForeground, out foregroundColor);
@@ -118,7 +128,7 @@ namespace Project_FinchControl
 
 
 
-            File.WriteAllText(dataPath, updatedbackground);
+            File.AppendAllText(dataPath, updatedbackground);
             ConsoleColor backgroundColor;
 
             Enum.TryParse(updatedbackground, out backgroundColor);
@@ -130,26 +140,38 @@ namespace Project_FinchControl
 
         static void setTheme()
         {
-            string dataPath = @"Data\Theme.txt";
-            string foregroundColorString;
+            //
+            //saved Theme
+            //
+            Console.Clear();
+            string dataPath = "Data\\Theme.txt";
+            string[] theme;
 
             ConsoleColor foregroundColor;
-            foregroundColorString = File.ReadAllText(dataPath);
+            ConsoleColor background;
+            theme = File.ReadAllLines(dataPath);
 
-            Enum.TryParse(foregroundColorString, out foregroundColor);
-
+            Enum.TryParse(theme[0], out foregroundColor);
             Console.ForegroundColor = foregroundColor;
+
+            Enum.TryParse(theme[1], out background);
+            Console.BackgroundColor = background;
         }
 
         static void DisplayMainMenu()
         {
             Finch finchRobot = new Finch();
 
+            //
+            //Varaibles
+            //
             bool finchRobotConnected = false;
             bool quitApplication = false;
             string menuChoice;
 
-
+            //
+            //Menu Selection
+            //
             do
             {
                 DisplayScreenHeader("Main Menu");
@@ -267,6 +289,9 @@ namespace Project_FinchControl
             string userResponse;
             bool done = false;
 
+            //
+            //Users selection
+            //
             DisplayScreenHeader("Finch Robot Commands");
             Console.WriteLine("all of the commands: ");
             Console.WriteLine("Moveforward, Movebackward"); 
@@ -275,7 +300,9 @@ namespace Project_FinchControl
             Console.WriteLine("LEDon, LEDoff ");
             Console.WriteLine("When you are all done with your commands just add [Done]");
 
-
+            //
+            //Commands
+            //
             do
             {
                 Console.Write("Enter Command:");
@@ -347,11 +374,11 @@ namespace Project_FinchControl
 
         static void DisplayUserProgramming(Finch finchRobot)
         {
-
+            //
+            //Varibles
+            //
             string menuChoice;
             bool quitApplication = false;
-
-
 
             (int motorSpeed, int ledBrightness, int waitSeconds) commandParameters;
             commandParameters.motorSpeed = 0;
@@ -367,8 +394,6 @@ namespace Project_FinchControl
 
                 DisplayScreenHeader("Main Menu");
 
-
-
                 //
                 // get user menu choice
                 //
@@ -376,17 +401,12 @@ namespace Project_FinchControl
                 Console.WriteLine("b) Add Commands");
                 Console.WriteLine("c) View Commands");
                 Console.WriteLine("d) Execute Commands");
-                Console.WriteLine("e) save Commands to Teext File");
-                Console.WriteLine("f)");
+                Console.WriteLine("e) save Commands to Text File");
                 Console.WriteLine("q) Quit");
                 Console.WriteLine();
                 Console.Write("Enter Choice:");
 
-
-
                 menuChoice = Console.ReadLine().ToLower();
-
-
 
                 //
                 // process user menu choice
@@ -458,47 +478,32 @@ namespace Project_FinchControl
             string dataPath = @"Data\Data.txt";
             List<string> commandsString = new List<string>();
 
-
-
             DisplayScreenHeader("Write Commands to the data file");
-
-
 
             foreach (FinchCommand command in commands)
             {
-
                 commandsString.Add(command.ToString());
-
             }
 
             Console.WriteLine("All ready to save");
             File.WriteAllLines(dataPath, commandsString.ToArray());
 
-
-
             DisplayContinuePrompt();
-
-
 
         }
 
         static void DisplayExecuteCommands(Finch finchrobot, List<FinchCommand> commands, (int motorSpeed, int ledBrightness, int waitSeconds) commandParameters)
         {
 
-
-
             int motorSpeed = commandParameters.motorSpeed;
             int ledBrightness = commandParameters.ledBrightness;
             int waitSeconds = commandParameters.waitSeconds * 1000;
 
-
-
             DisplayScreenHeader("Execte Finch Commands");
 
-
-
+            //
             // info and pause
-
+            //
             foreach (FinchCommand command in commands)
             {
                 Console.WriteLine(command);
@@ -549,13 +554,10 @@ namespace Project_FinchControl
 
             }
 
-
             DisplayContinuePrompt();
         }
         static List<FinchCommand> DisplayReadUserProgrammingData()
         {
-
-
 
             string dataPath = @"Data\Data.txt";
             List<FinchCommand> commands = new List<FinchCommand>();
@@ -565,22 +567,14 @@ namespace Project_FinchControl
             Console.WriteLine("Ready to read commands from the data file");
             Console.WriteLine();
 
-
-
             commandsString = File.ReadAllLines(dataPath);
             FinchCommand command;
 
-
-
             foreach (string commandString in commandsString)
             {
-
                 Enum.TryParse(commandString, out command);
                 commands.Add(command);
-
             }
-
-
 
             Console.WriteLine();
             Console.WriteLine("Commands read from data file done");
@@ -597,22 +591,25 @@ namespace Project_FinchControl
             commandParameters.motorSpeed = 0;
             commandParameters.ledBrightness = 0;
             commandParameters.waitSeconds = 0;
-
-            bool ValidResponse = false;
             string userResponse;
 
             DisplayScreenHeader("Command Paramaters");
+
+            //
+            //GEtting paramaters
+            //
+            bool ValidResponse = false;
             do
             {
                 Console.Write("Enter Motor Speed [1 - 255]: ");
                 userResponse = Console.ReadLine();
-                ValidResponse = int.TryParse(Console.ReadLine(), out commandParameters.motorSpeed);
-
-                  if (!ValidResponse)
-                   {
+                ValidResponse = int.TryParse(userResponse, out commandParameters.motorSpeed);
+                
+                if (!ValidResponse)
+                {
                     Console.WriteLine();
                     Console.WriteLine("Please Enter a Valid Value");
-                    }
+                }
 
             } while (!ValidResponse);
 
@@ -620,8 +617,8 @@ namespace Project_FinchControl
             {
                 Console.Write("Enter LED brightness [1-255]");
                 userResponse = Console.ReadLine();
-                int.TryParse(Console.ReadLine(), out commandParameters.ledBrightness);
-                ValidResponse = int.TryParse(Console.ReadLine(), out commandParameters.ledBrightness);
+                ValidResponse = int.TryParse(userResponse, out commandParameters.ledBrightness);
+               
 
                   if (!ValidResponse)
                   {
@@ -635,8 +632,8 @@ namespace Project_FinchControl
             {
                 Console.Write("Enter wait time ");
                 userResponse = Console.ReadLine();
-                int.TryParse(Console.ReadLine(), out commandParameters.waitSeconds);
-                ValidResponse = int.TryParse(Console.ReadLine(), out commandParameters.waitSeconds);
+               ValidResponse = int.TryParse(userResponse, out commandParameters.waitSeconds);
+              
 
                 if (!ValidResponse)
                 {
@@ -664,7 +661,7 @@ namespace Project_FinchControl
                 finchrobot.setLED(0, 255, 0);
                 DisplayScreenHeader("Monitoring Light Levels");
                 currentLightLevel = finchrobot.getLeftLightSensor();
-                Console.WriteLine($"Maximum Light Level: {threshold}");
+                Console.WriteLine($"Max Light Level: {threshold}");
                 Console.WriteLine($"Current Light Level: {currentLightLevel}");
 
                 if (currentLightLevel > threshold)
@@ -868,10 +865,24 @@ namespace Project_FinchControl
         {
             double minThreshold = 0;
 
-            DisplayScreenHeader("Min temp");
+            switch (alarmType)
+            {
+                case "light":
+                    DisplayScreenHeader("min light");
+                    Console.WriteLine("Enter min light: ");
+                    minThreshold = double.Parse(Console.ReadLine());
+                    break;
+                case "temperature":
+                    DisplayScreenHeader("Min temp");
 
-            Console.Write("Enter Min Temperature:");
-            minThreshold = double.Parse(Console.ReadLine());
+                    Console.Write("Enter Min Temperature:");
+                    minThreshold = double.Parse(Console.ReadLine());
+                    break;
+                default:
+                    break;
+            }
+
+
 
             DisplayContinuePrompt();
 
